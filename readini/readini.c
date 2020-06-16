@@ -7,6 +7,7 @@
 #include "inih/ini.h"
 
 #define VAR_PREFIX "_INI_"
+#define VERSION "0.2"
 
 struct inipart {
 	char *section;
@@ -57,16 +58,61 @@ static int handler(
 
 }
 
-void help() {
-	printf("help is here\n");
+
+static void usage (char *name, int status) {
+
+	fprintf(stderr, "%s - export ini files to shell environment variables\n", name);
+	fprintf(stderr, "part of the systemjack package, for the purposes of consistency\n");
+	fprintf(stderr, "Usage: %s -i <ini_file> [ -a ] [ definition1 definition2 ]\n\n", name);
+
+	fprintf(stderr,
+		"Options:\n"
+		"  -h     this help message\n"
+		"  -i     required, ini file to process\n"
+		"  -a     print all entris in ini file\n"
+		"\n"
+		"If '-a' is not specified, you can pick which variables to export using 'section:field'\n"
+		"which will export a variable named '%ssection_field.  If you wish to give it a simpler\n"
+		"variable name, you can append a new name after the definition using '=', as in\n"
+		"'section:field=myfield', which will define the variable as 'myfield'.  If '-a' is\n"
+		"chosen, all variables will be exported using the '%ssection_field' style.\n"
+		"\n"
+		"To make use of readini, eval the output.\n"
+		"\n"
+		"Examples:\n"
+		"readini -ai /etc/systemjack/main.ini\n"
+		"\n"
+		"readini -i /etc/systemjack/main.ini :version jack:ports ffmpeg:style=ffstyle\n"
+		"\n"
+		"Report bugs to <code@ktqa.org>.\n"
+		"Website and manual: <https://vis.nu/FIXME>\n",
+		VAR_PREFIX, VAR_PREFIX
+
+	);
+	exit(status);
 }
+
+
+static void version(char *name) {
+	printf(
+		"%s %s\n\n"
+		"Copyright (C) 2020 Sam Mulvey <code@ktqa.org>\n"
+		"This is free software; see the source for copying conditions.  There is NO\n"
+		"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+		name,
+		VERSION
+	);
+	exit(0);
+
+}
+
 
 
 int main(int argc, char **argv) {
 	int o, error;
 	char *ini_file = NULL, *section = NULL, *field = NULL, *env = NULL, *tmp = NULL;
 
-	while ( (o = getopt(argc, argv, "apehdi:")) != -1 ) {
+	while ( (o = getopt(argc, argv, "apehdvi:")) != -1 ) {
 
 		switch (o) {
 			case 'i':
@@ -82,20 +128,22 @@ int main(int argc, char **argv) {
 				break;
 
 			case 'h':
-				help();
-				exit(0);
+				usage(argv[0], 0);
+
+			case 'v':
+				version(argv[0]);
+				break;
 
 			default:
-				help();
-				exit(1);
+				usage(argv[0], 1);
 				break;
 		}
 
 	}
 
 	if (ini_file == NULL) {
-		help();
-		exit(1);
+		fprintf(stderr, "%s: no ini file specified.\n", argv[0]);
+		usage(argv[0], 1);
 	}
 
 
@@ -104,8 +152,7 @@ int main(int argc, char **argv) {
 
 		if (argc == optind) {
 			fprintf(stderr, "%s: no definitions, all not specified.\n", argv[0]);
-			help();
-			exit(1);
+			usage(argv[0], 1);
 		}
 
 		for (int i = optind ; i < argc ; i++) {
