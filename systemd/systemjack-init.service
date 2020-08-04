@@ -1,0 +1,19 @@
+[Unit]
+Description=systemjack initialization and bus preparation
+After=systemd-user-sessions.service jackd.service
+Requisite=jackd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/systemjack/init.sh
+TimeoutStartSec=5m
+LimitMEMLOCK=infinity
+LimitRTPRIO=infinity
+LimitRTTIME=infinity
+
+
+
+[Install]
+WantedBy=multi-user.target
+

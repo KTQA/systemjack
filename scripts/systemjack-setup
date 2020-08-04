@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+
+
+## Note, this script will set up local files, rather than 
+## distribution or package files as these are considered
+## specific to the system, and the setup script just aides
+## in their quick creation.   This is why dbus configs
+## are in /etc, and we call systemctl edit rather than
+## modify the service files directly.
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+if [ `whoami` != "root" ]; then
+	die "must be root to setup"
+fi
+
+eval `$READINI -i "${INI_FILES}/main.ini" setup:user=user setup:group=group email:do=email_do`
+
+if is_false $user ; then
+	die "user is not set in main.ini"
+fi
+
+if is_false $group ; then
+	die "group is not set in main.ini"
+fi
+
+cat <<EndPreamble
+Configuring systemjack services for user '${user}' and group '${group}'.
+
+This setup script will make modifications to dbus and set overrides
+on already-installed systemd services related to systemjack operation.
+Make sure you have configured *at* *least* /etc/systemjack/main.ini
+before you continue.
+
+EndPreamble
+
+if is_true $email_do ; then
+	echo "Additionally, this script will configure emails on failure."
+	echo
+fi
+
+read -p "Does this sound good to you? [y/N] " -n 1 -r
+echo
+if [[ $REPLY =~ ^[^Yy]$ ]]; then
+	die "not continuing."
+fi
+
+echo "Step 1: Allow '${user}' to access sound hardware."
+echo
+
+mkdir -p /etc/dbus-1/system.d
+sed "s/{USER}/${user}/g" /usr/share/systemjack/templates/systemjack-dbus.conf > /etc/dbus-1/system.d/systemjack-dbus.conf
+if [ $? -ne 0 ]; then
+	die "could not configure dbus stuff."
+fi
+
+echo "Step 2: Set user, group, custom priority, and failure for each service."
+echo
+
+export EDITOR=tee
+for service in ${SYSTEMJACK_SERVICES[@]}; do
+
+	# clear output
+	output=""
+
+	# get the nice name of the service for priority purposes.
+	[[ $service =~ ^([^@ ]+)@?\.service$ ]]
+	if [ "${BASH_REMATCH[1]}" == "" ]; then
+		die "couldn't get a nice name out of '$service' service."
+	fi
+	nicename=${BASH_REMATCH[1]}
+
+	# add email, if necessary
+	if is_true $email_do ; then
+		output+=$(printf "[Unit]\nOnFailure=systemjack-email@%%n.service")
+		output+=$'\n\n'
+	fi
+
+
+	# add user and group output, reqd.
+	output+=$(printf "[Service]\nUser=%s\nGroup=%s\n" "${user}" "${group}")
+	output+=$'\n'
+
+
+	# if non-default priority, add it here.
+	eval `$READINI -i "${INI_FILES}/main.ini" priority:${nicename}=pri`;
+	if ! is_false $pri ; then
+		output+=$(printf "CPUSchedulingPriority=%d\n" "${pri}")
+		output+=$'\n'
+	fi
+
+	# now, do
+	printf "(editing service '%s')\n" "${service}"
+	echo "$output" | systemctl edit "${service}"
+	
+
+	
+done
+unset EDITOR
+
+cat <<EndMESSAGE
+There is no step 3.  You're set up now, but there might be more
+configuration to do.
+
+If you are running with a GUI, You'll need to execute 'systemjack-guiready'
+once your graphical environment is ready to go, otherwise apps won't start.
+You'll also want to make sure DISPLAY is properly set in the ENV file
+at '/etc/systemjack/env.sh'.  This is true if you're using X11 or
+Wayland.  Sorry.
+
+We don't have a good VNC setup yet, but we're working on that.  For auto-
+matic GUI launch, see your distribution's documentation.  VNC launch
+is forthcoming.
+
+You'll now want to enable at least systemjack-init and jackd, and then
+reboot to make sure your changes are good.
+
+EndMESSAGE
+

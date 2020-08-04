@@ -1,0 +1,18 @@
+[Unit]
+Description=jackd via systemjack
+After=sound.target
+
+[Service]
+ExecStart=/usr/lib/systemjack/jackd.sh
+Restart=always
+RestartSec=5
+LimitMEMLOCK=infinity
+LimitRTPRIO=infinity
+LimitRTTIME=infinity
+IOSchedulingClass=realtime
+CPUSchedulingPolicy=fifo
+CPUSchedulingPriority=95
+
+
+[Install]
+WantedBy=multi-user.target
