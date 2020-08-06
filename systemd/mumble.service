@@ -1,0 +1,19 @@
+[Unit]
+Description=Mumble VoIP System
+After=systemd-user-sessions.service jackd.service systemjack-init.service
+Requisite=systemjack-init.service
+
+
+[Service]
+ExecStart=/usr/lib/systemjack/mumble
+Restart=always
+RestartSec=10
+LimitMEMLOCK=infinity
+LimitRTPRIO=infinity
+LimitRTTIME=infinity
+IOSchedulingClass=realtime
+CPUSchedulingPolicy=fifo
+CPUSchedulingPriority=80
+
+[Install]
+WantedBy=multi-user.target

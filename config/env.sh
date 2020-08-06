@@ -28,6 +28,7 @@ export SYSTEMJACK_SERVICES=(
 	"patch@.service"
 	"non-mixer.service"
 	"silentjack.service"
+	"mumble.service"
 )
 
 ## Stuff we need ends here.  Put your own environment variables here. 

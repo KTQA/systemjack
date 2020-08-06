@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+
+eval `$READINI -i "${INI_FILES}/main.ini" \
+	silentjack:script=script \
+	silentjack:silence=silence \
+	silentjack:grace=grace \
+	silentjack:port=port`
+
+silence=${silence:-60}
+grace=${grace:-30}
+
+
+if [ ! -x $script ]; then
+	die "silentjack script '${script}' is not executable"
+fi
+
+if [ -z "$port" ]; then
+	die "no port in silentjack specified"
+fi
+
+silentjack=$(which silentjack)
+
+if [ ! -x "$silentjack" ]; then
+	die "silentjack is not executable"
+else
+	exec $silentjack -p ${silence} -g ${grace} -n "silentjack" -c "${port}" "${script}"
+fi
+

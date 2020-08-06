@@ -19,7 +19,7 @@ export JACK_NO_START_SERVER=1
 ## Services that systemjack has to manage.  If other packages have
 ## service files that depend on systemjack, they need to be added here.
 export SYSTEMJACK_SERVICES=(
-	#"aj-snapshot.service"
+	"aj-snapshot.service"
 	#"alsa_in@.service"
 	#"alsa_out@.service"
 	#"calf@.service"
@@ -28,7 +28,8 @@ export SYSTEMJACK_SERVICES=(
 	"jackd.service"
 	#"patch@.service"
 	#"non-mixer.service"
-	#"silentjack.service"
+	"silentjack.service"
+	"mumble.service"
 )
 
 

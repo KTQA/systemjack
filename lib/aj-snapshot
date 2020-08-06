@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+eval `$READINI -i "${INI_FILES}/main.ini" ajsnapshot:file=file ajsnapshot:remove=remove`
+
+is_true $remove && arg="-x -d" || arg="-d"
+
+
+if [ ! -f $file ]; then
+	die "aj-snapshot file '${file}' does not exist"
+fi
+
+ajsnapshot=$(which aj-snapshot)
+
+if [ ! -x "$ajsnapshot" ]; then
+	die "aj-snapshot is not executable"
+else
+	exec $ajsnapshot $arg "${file}"
+fi

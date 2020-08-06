@@ -1,0 +1,16 @@
+[Unit]
+Description=JACK Snapshot Manager
+After=systemd-user-sessions.service jackd.service systemjack-init.service
+Requisite=systemjack-init.service
+
+[Service]
+ExecStart=/usr/lib/systemjack/aj-snapshot
+Restart=always
+RestartSec=10
+KillSignal=SIGTERM
+LimitMEMLOCK=infinity
+LimitRTPRIO=infinity
+LimitRTTIME=infinity
+
+[Install]
+WantedBy=multi-user.target

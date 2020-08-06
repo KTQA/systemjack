@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+eval `$READINI -i "${INI_FILES}/main.ini" \
+	mumble:url=url \
+	mumble:gui=gui`
+
+is_true $gui && args="" || args="-platform offscreen"
+
+if [ -z "$url"]; then
+	die "no mumble url specified"
+fi
+
+
+mumble=$(which mumble)
+
+if [ ! -x "$mumble" ]; then
+	die "mumble is not executable"
+else
+	exec $mumble $args "${url}"
+fi
+
