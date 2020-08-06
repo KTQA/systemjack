@@ -6,7 +6,7 @@ Requisite=jackd.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/lib/systemjack/init.sh
+ExecStart=/usr/lib/systemjack/systemjack-init
 TimeoutStartSec=5m
 LimitMEMLOCK=infinity
 LimitRTPRIO=infinity

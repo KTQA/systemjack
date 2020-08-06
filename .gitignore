@@ -1,3 +1,3 @@
-jack_multithru/jack_multithru
-readini/readini
+src/jack_multithru/jack_multithru
+src/readini/readini
 test/*
