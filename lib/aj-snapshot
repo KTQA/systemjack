@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+die "this is a failure"
 
 # set directories for scripts.
 INI_FILES=${INI:-"/etc/systemjack"}
@@ -26,3 +27,4 @@ if [ ! -x "$ajsnapshot" ]; then
 else
 	exec $ajsnapshot $arg "${file}"
 fi
+

@@ -1,3 +1,10 @@
 bash
 jack2
+
+opt:
 pciutils - if using PCI latency
+urxvt
+screen
+xdotool
+
+

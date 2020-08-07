@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+eval `$READINI -i "${INI_FILES}/main.ini" \
+	email:to=to \
+	email:from=from \
+	email:shortid=shortid`
+
+
+/usr/bin/sendmail -t <<ErrMAIL
+To: ${to}
+From: ${from}
+Subject: ${shortid} failure -- $1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+X-SystemJack-Failure: $1
+X-SystemJack-System: ${shortid}
+
+systemd status information: 
+$(systemctl status --full "$1")
+
+$(email_extra "$1")
+ErrMAIL
+

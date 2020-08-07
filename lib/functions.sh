@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+
 #echo "functions.sh loaded"
 
 READINI=${READINI:-$(which readini)}
@@ -35,10 +36,74 @@ is_false() {
 	return 1
 }
 
+do_in_urxvt() {
+
+	local cmd=$1
+	local title=$2
+	local hide=$3
+	local extra=""
+	local urxvt=$(which urxvt)
+
+	title=${title:="SystemJack Window"}
+	hide=${hide:=0}
+
+	if [ -z "$cmd" ]; then 
+		die "do_in_urxvt -- no command specfified"
+	fi
+
+	if [ $hide ]; then
+
+		local xdotool=$(which xdotool)
+		if [ ! -x $xdotool ]; then
+			die "xdotool not installed and hide requested"
+		fi
+		extra="$xdotool windowminimize \$WINDOWID &&"
+
+	fi
+
+
+
+
+	if [ -x $urxvt ]; then 
+		exec $urxvt -T "$title" \
+			-e $(which bash) -c "$extra $1"
+	else
+		die "no urxvt binary available"
+	fi
+
+
+}
+
+do_in_screen() {
+
+	local cmd=$1
+	local name=$2
+	local screen=$(which screen)
+
+	name=${name:="SystemJack"}
+
+	if [ -z "$cmd" ]; then 
+		die "do_in_screen -- no command specfified"
+	fi
+
+
+	if [ -x $screen ]; then 
+		exec $screen -DmS "$name" -- $cmd
+	else
+		die "no screen binary available"
+	fi
+}
+
+
+
+# startup sanity checks
 if [ ! -x $READINI ]; then
 	die "readini is not right"
 fi
 
-#if [ ! -f /etc/systemd/system/jackd.service.d/override.conf ]; then
-	#die "systemjack-setup not run, please run that first."
-#fi
+if [ "$(basename $0)" != "systemjack-setup" ]; then
+	if [ ! -f /etc/systemd/system/jackd.service.d/override.conf ]; then
+		die "systemjack-setup not run, please run that first."
+	fi
+fi
+

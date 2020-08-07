@@ -1,0 +1,6 @@
+[Unit]
+Description=failure status email for %i service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemjack-email %i
