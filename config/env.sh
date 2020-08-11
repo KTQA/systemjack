@@ -31,6 +31,15 @@ export SYSTEMJACK_SERVICES=(
 	"mumble.service"
 )
 
-## Stuff we need ends here.  Put your own environment variables here. 
+## an extra function for failure emails, if needed.
+## systemjack-email will call this function
+## takes the system what failed as an argument.
 
+email_extra() {
+	:; # delete this line if this function needs to do something
+}
+
+
+
+## Stuff we need ends here.  Cusomization begins here.
 
