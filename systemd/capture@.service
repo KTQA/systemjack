@@ -1,0 +1,20 @@
+[Unit]
+Description=Systemjack Capture Subsystem %i
+After=systemd-user-sessions.service jackd.service systemjack-init.service
+Requisite=systemjack-init.service
+
+
+[Service]
+ExecStart=/usr/lib/systemjack/capture %i
+Restart=always
+RestartSec=3
+LimitMEMLOCK=infinity
+LimitRTPRIO=infinity
+LimitRTTIME=infinity
+IOSchedulingClass=realtime
+CPUSchedulingPolicy=fifo
+CPUSchedulingPriority=80
+
+
+[Install]
+WantedBy=multi-user.target

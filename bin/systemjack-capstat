@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+json=0
+while getopts "j" option; do
+	case $option in 
+		j)
+			json=1
+			;;
+	esac
+done
+shift $((OPTIND - 1))
+name=$@ # this probably needs to be cleaner when I'm thinking better
+
+eval `$READINI -i "${INI_FILES}/capture.ini" "${name}:dir=dir" "${name}:ui=ui"`
+
+prefix=${prefix:-"$name"}
+
+# Verify directory, which also verifies existence
+if [ ! -w "$dir" ]; then
+	die "$dir is not a valid capture definition"
+fi
+
+
+# Get the main pid from systemd
+pid=$(systemctl show -P MainPID capture@${name})
+
+# if it's zero, it's not running. don't have to check ActiveState.
+if [ "$pid" == "0" ]; then
+
+	if [ "$json" == "1" ]; then
+		echo '{ "status": 0, "status_txt": "not running" }'
+	else
+		echo "Status: stopped"
+	fi
+	
+else
+
+	active_sd=$(systemctl show -P ActiveEnterTimestamp capture@${name})
+	active_ts=$(${READINI} -t ${active_sd})
+
+	# I really feel like this is hacky.
+	if [ "$ui" == "none" ]; then
+
+		# get the full command from the pid
+		cmdline=$(ps -p ${pid} -ho args)
+
+	else
+
+		# Okay, it's running.   Find the jack_capture command using pgrep.
+		cmdline=$(pgrep -aP ${pid} | tail -1)
+
+	fi
+
+	# The last (space delimited) field should be the name of the file.
+	file=${cmdline##* }
+
+	if [ ! -e $file ]; then
+		die "file '${file}' doesn't exist, this is likely a problem in systemjack."
+	fi
+
+	size=$(stat --printf="%s" ${file})
+	size_human=$(numfmt --to=iec ${size})
+
+
+	if [ $json == "1" ]; then
+		cat <<EndJSON
+{
+	"status": 1,
+	"status_txt": "running",
+	"file": "${file}",
+	"size": ${size},
+	"size_txt": "${size_human}",
+	"started": ${active_ts},
+	"started_txt": "${active_sd}"
+}
+EndJSON
+
+
+	else
+
+		 cat <<EndHUMAN
+Status:       running
+Filename:     $file
+Size:         $size ($size_human)
+Started:      $active_sd
+EndHUMAN
+
+
+	fi
+
+fi
+
+
+

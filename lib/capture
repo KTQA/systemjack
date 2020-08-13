@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+name=$1
+
+eval `$READINI -i "${INI_FILES}/capture.ini" \
+	${name}:dir=dir \
+	${name}:prefix=prefix \
+	${name}:archive=archive \
+	${name}:codec=codec \
+	${name}:channels=channels \
+	${name}:bitrate=bitrate \
+	${name}:port=ports@ \
+	${name}:ui=ui \
+	${name}:osc=osc`
+
+prefix=${prefix:-"$name"}
+
+
+
+# Verify directory, which also verifies existence
+if [ ! -w "$dir" ]; then
+	die "directory '$dir' is either not set, non-existant, or not writable."
+fi
+
+if is_true $archive ; then
+	dir="${dir}/$(date +%Y)/$(date +%m)/$(date +%d)"
+	mkdir -p $dir
+	if [ ! -w "$dir" ]; then
+		die "could not create archive directory '${dir}'"
+	fi
+fi
+
+
+
+options="-jn ${name}"
+case $codec in
+	wav)
+		options+=" -f wav"
+		;;
+	flac)
+		options+=" -f flac"
+		;;
+
+	mp3)
+		if [ -z "$bitrate" ]; then
+			die "capture '${name}' has no bitrate set but is capturing mp3"
+		fi
+		options+=" -f mp3 -mp3b ${bitrate}"
+
+		if [ ! -z "$samplerate" ]; then
+			options+=" -mp3s ${samplerate}"
+		fi
+		;;
+
+	*)
+		die "bad codec definition in '${name}' for capture"
+		;;
+esac
+
+if [ -z $channels ]; then
+	die "no channels specified in capture '${name}'"
+else 
+	options+=" -c $channels"
+fi
+
+if [ -z $ports ]; then
+	die "no ports specified in capture '${name}'"
+else
+
+	for p in "${ports[@]}"; do
+		options+=" -p ${p}"
+	done
+fi
+
+if [ ! -z $osc ]; then
+	options+=" -O ${osc}"
+fi
+
+
+for i in 1 2 3 .. N
+do
+	fullfile="${dir}/${prefix}-$(date +%Y%m%d-%H%M)-${i}.${codec}"
+	if [ ! -f $fullfile ]; then
+		break
+	fi
+done
+
+jack_capture=$(which jack_capture)
+if [ ! -x $jack_capture ]; then
+	die "no jack_capture binary found or is not executable"
+fi
+
+
+case $ui in
+	none)
+		options+=" --daemon"
+		cmd="${jack_capture} ${options} ${fullfile}"
+		say "capture '${name}' command: ${cmd}"
+		exec $cmd
+		;;
+
+	screen)
+		cmd="${jack_capture} ${options} ${fullfile}"
+		say "capture in screen '${name}' command: ${cmd}"
+		screen_name=$(printf "capture_%s" $name)
+		do_in_screen "${cmd}" "${screen_name}"
+		;;
+
+	urxvt)
+		cmd="${jack_capture} ${options} ${fullfile}"
+		say "capture in hidden urxvt '${name}' command: ${cmd}"
+		urxvt_name=$(printf "SystemJack Capture %s" $name)
+		do_in_urxvt "${cmd}" "${urxvt_name}" 0
+		;;
+
+	hide)
+		cmd="${jack_capture} ${options} ${fullfile}"
+		say "capture in hidden urxvt '${name}' command: ${cmd}"
+		urxvt_name=$(printf "SystemJack Capture %s" $name)
+		do_in_urxvt "${cmd}" "${urxvt_name}" 1
+		;;
+
+	*)
+		die "capture '${name}' has nonsensical ui definition"
+		;;
+esac

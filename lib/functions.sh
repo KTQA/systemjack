@@ -6,13 +6,13 @@
 READINI=${READINI:-$(which readini)}
 
 die() {
-	echo -n "systemjack error: "
+	echo -n "systemjack error: " >&2
 	echo $1
 	exit 1
 }
 
 warn() {
-	echo -n "systemjack warning: "
+	echo -n "systemjack warning: " >&2
 	echo $1
 }
 
@@ -44,18 +44,18 @@ do_in_urxvt() {
 	local extra=""
 	local urxvt=$(which urxvt)
 
-	title=${title:="SystemJack Window"}
-	hide=${hide:=0}
+	title=${title:-"SystemJack Window"}
+	hide=${hide:-0}
 
 	if [ -z "$cmd" ]; then 
 		die "do_in_urxvt -- no command specfified"
 	fi
 
-	if [ $hide ]; then
+	if [ "$hide" == "1" ]; then
 
 		local xdotool=$(which xdotool)
 		if [ ! -x $xdotool ]; then
-			die "xdotool not installed and hide requested"
+			warn "xdotool not installed and hide requested, not minimizing"
 		fi
 		extra="$xdotool windowminimize \$WINDOWID &&"
 
@@ -65,7 +65,7 @@ do_in_urxvt() {
 
 
 	if [ -x $urxvt ]; then 
-		exec $urxvt -T "$title" \
+		exec $urxvt -T "${title}" \
 			-e $(which bash) -c "$extra $1"
 	else
 		die "no urxvt binary available"
@@ -80,7 +80,7 @@ do_in_screen() {
 	local name=$2
 	local screen=$(which screen)
 
-	name=${name:="SystemJack"}
+	name=${name:-"SystemJack"}
 
 	if [ -z "$cmd" ]; then 
 		die "do_in_screen -- no command specfified"
