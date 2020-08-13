@@ -1,10 +1,9 @@
 ===== TODO =====
 
   - Insure that SIGTERM sent to jack_capture saves the buffer.
-  - Add opus support to the capture infrastructure
-  - change ajsnapshot around so it doesn't just pass args
   - figure out how to do opus with jack_capture
   - maybe use PHP's ini array method for cross-compatibility?
+  - a global gui override?
 
 
 ===== BUGS =====

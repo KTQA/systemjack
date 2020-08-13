@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+eval `$READINI -i ${INI_FILES}/main.ini \
+	nonmixer:config=config \
+	nonmixer:port=port \
+	nonmixer:gui=gui`;
+
+gui=${gui:-"true"}
+options=""
+
+if is_true $gui; then
+	nonmixer=$(which non-mixer)
+else
+	nonmixer=$(which non-mixer-noui)
+fi
+
+if [ ! -x $nonmixer ]; then
+	die "non-mixer is not executable"
+fi
+
+if [ ! -w $config ]; then
+	die "non-mixer config does not exist or is not writable"
+fi
+
+if [ ! -z $port ]; then
+	options+=" --osc-port=${port}"
+fi
+
+exec $nonmixer $options $config
+
+
+
+
+
+
+#ExecStart=/usr/bin/non-mixer --osc-port=${NONPORT} ${SJCONFIGS}/${NONCONFIG}
