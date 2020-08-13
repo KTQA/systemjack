@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <jack/jack.h>
+#include <stdbool.h>
 
 #define MAX_CHANNELS 32
 
@@ -21,6 +22,8 @@ jack_port_t **output_ports;
 jack_client_t *client;
 
 int multithru_channels = 2;
+
+bool meterbridge_compat = false;
 
 static void signal_handler ( int sig )
 {
@@ -75,6 +78,7 @@ help (int code)
 	fprintf(stderr, "        -s <name>   Connect to jack server named <name>\n");
 	fprintf(stderr, "        -n <name>   Name this client <name>\n");
 	fprintf(stderr, "        -c <num>    Create 1-%d channels\n", MAX_CHANNELS);
+	fprintf(stderr, "        -m          Use meterbridge naming conventions\n");
 	fprintf(stderr, "Currently part of systemjack, adapted from jack_thru.\n");
 
 	exit(code);
@@ -92,7 +96,7 @@ main ( int argc, char *argv[] )
 
 	/* do args */
 
-	while ((i = getopt(argc, argv, "n:c:s:h")) != -1)
+	while ((i = getopt(argc, argv, "mn:c:s:h")) != -1)
 	{
 		switch (i) {
 			case 'n':
@@ -110,6 +114,9 @@ main ( int argc, char *argv[] )
 			case 'h':
 				help(0);
 				break;
+
+			case 'm':
+				meterbridge_compat = true;
 
 
 		}
@@ -169,10 +176,24 @@ main ( int argc, char *argv[] )
     char port_name[16];
     for ( i = 0; i < multithru_channels; i++ )
     {
-        sprintf ( port_name, "input_%d", i + 1 );
+
+		if (meterbridge_compat)
+		{
+        	sprintf ( port_name, "meter_%d", i + 1 );
+		} else {
+        	sprintf ( port_name, "input_%d", i + 1 );
+		}
         input_ports[i] = jack_port_register ( client, port_name, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0 );
-        sprintf ( port_name, "output_%d", i + 1 );
+
+        if (meterbridge_compat)
+		{
+			sprintf( port_name, "monitor_%d", i + 1 );
+		} else {
+			sprintf ( port_name, "output_%d", i + 1 );
+		}
         output_ports[i] = jack_port_register ( client, port_name, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0 );
+
+
         if ( ( input_ports[i] == NULL ) || ( output_ports[i] == NULL ) )
         {
             fprintf ( stderr, "no more JACK ports available\n" );

@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+name=$1
+
+if [ -z $name ]; then
+	die "must specify configuration"
+fi
+
+eval `$READINI -i ${INI_FILES}/patchpanel.ini \
+	${name}:type=type \
+	${name}:channels=channels \
+	${name}:columns=columns`;
+
+type=${type:-"none"}
+
+if [ -z $channels ]; then
+	die "no patchpanel definition for '${name}'"
+fi
+
+if [ -z $DISPLAY ]; then
+	type="none"
+fi
+
+case $type in
+	none)
+		bin=$(which jack_multithru)
+		;;
+
+	vu | ppm | dpm | jf | sco)
+		bin=$(which meterbridge)
+		;;
+	
+	default)
+		die "'${type}' is a bad patchpanel type"
+		;;
+esac
+
+if [ ! -x $bin ]; then
+	die "no proper binary for patchpanel"
+fi
+
+
+
+if [ $type == "none" ]; then
+	exec $bin -m -n $name -c $channels
+else
+
+	chanx=""
+	for (( i=0; i<$channels; i++ )); do
+		chanx+=" x"
+	done
+
+	col=""
+	if [ ! -z $columns ]; then
+		col="-c ${columns}"
+	fi
+
+	exec $bin -n ${name} -t ${type} $col $chanx
+
+fi
