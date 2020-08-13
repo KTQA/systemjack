@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+eval `$READINI -i ${INI_FILES}/main.ini \
+	calf:config=config \
+	calf:gui=gui \
+	calf:name=name`;
+gui=${gui:-"true"}
+options=""
+calfjackhost=$(which calfjackhost)
+
+
+if [ ! -x $calfjackhost ]; then
+	die "calfjackhost does not exist or is not executable"
+fi
+
+if [ ! -e $config ]; then
+	die "CALF config file '${config}' does not exist"
+fi
+
+if is_false $gui; then
+	options+=" -no-x"
+fi
+
+if [ ! -z $name ]; then
+	options+=" -c ${name}"
+fi
+
+exec $calfjackhost $options --load "${config}"
+
+
+

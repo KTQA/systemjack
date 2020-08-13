@@ -39,8 +39,3 @@ fi
 exec $nonmixer $options $config
 
 
-
-
-
-
-#ExecStart=/usr/bin/non-mixer --osc-port=${NONPORT} ${SJCONFIGS}/${NONCONFIG}
