@@ -24,6 +24,7 @@ install_binscripts:
 install_etc:
 	mkdir -p $(DESTDIR)$(ETC_PREFIX)/etc/systemjack
 	install -m644 etc/*.ini $(DESTDIR)$(ETC_PREFIX)/etc/systemjack
+	install -m644 etc/*.sh $(DESTDIR)$(ETC_PREFIX)/etc/systemjack
 
 .PHONY: install_share
 install_share:
