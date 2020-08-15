@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+
+testvar() {
+	local varname=$1
+
+	if [ -z ${!varname} ]; then
+		die "no ${varname} set for ffmpeg definition '${name}'"
+	fi
+}
+
+name=$1
+
+eval `$READINI -i ${INI_FILES}/ffmpeg.ini \
+	${name}:type=type \
+	${name}:options=options \
+	${name}:samplerate=samplerate \
+	${name}:bitrate=bitrate \
+	${name}:compression=compression \
+	${name}:channels=channels \
+	${name}:url=url \
+	${name}:name=icename \
+	${name}:description=description`
+
+
+ffmpeg=$(which ffmpeg)
+channels=${channels:-2}
+samplerate=${samplerate:-48000}
+icename=${icename:-"SystemJack Stream"}
+description=${description:-""}
+# bitrate, url
+
+if [ ! -x $ffmpeg ]; then
+	die "no ffmpeg binary available"
+fi
+
+case $type in
+	custom)
+		if [ -z "$options" ]; then
+			die "ffmpeg '${name}' is custom but has no options"
+		fi
+		exec $ffmpeg $options
+		;;
+
+
+	mp3)
+		testvar "bitrate"
+		acodec="libmp3lame"
+		args="-b:a ${bitrate} -content_type audio/mpeg -f mp3"
+		;;
+
+	opus)
+		testvar "bitrate"
+		acodec="libopus"
+		args="-b:a ${bitrate} -content_type audio/ogg -f ogg"
+		;;
+
+	flac)
+		compression=${compresison:-5}
+		acodec="flac"
+		args="-compression_level $compression -content_type audio/ogg -f ogg"
+		;;
+
+	*)
+		die "bad definition '${name}' for ffmpeg"
+
+		;;
+esac
+
+testvar "url"
+
+
+exec $ffmpeg -loglevel error -f jack -i ${name} -vn \
+	-codec:a ${acodec} -ar ${samplerate} -ac ${channels} \
+	-ice_name "${icename}" -ice_description "${description}" \
+	$args $url
+
+
