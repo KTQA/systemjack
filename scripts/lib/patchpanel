@@ -31,6 +31,13 @@ if [ -z $DISPLAY ]; then
 	type="none"
 fi
 
+if [ "$type" == "none" ]; then
+	type=$(global_gui "dpm" "none" "none")
+else
+	type=$(global_gui "$type" "none" "$type")
+fi
+echo "TYPE ${type}"
+
 case $type in
 	none)
 		bin=$(which jack_multithru)
@@ -51,7 +58,7 @@ fi
 
 
 
-if [ $type == "none" ]; then
+if [ "$type" == "none" ]; then
 	exec $bin -m -n $name -c $channels
 else
 

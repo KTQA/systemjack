@@ -14,6 +14,9 @@ eval `$READINI -i "${INI_FILES}/main.ini" \
 	mumble:url=url \
 	mumble:gui=gui`
 
+gui=${gui:-"true"}
+gui=$(global_gui "true" "false" "$gui")
+
 is_true $gui && args="" || args="-platform offscreen"
 
 if [ -z "$url"]; then

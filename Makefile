@@ -12,7 +12,7 @@ install_services:
 
 .PHONY: install_libexec
 install_libexec:
-	mkdir -p $(DESTDIR)$(PREFIX)/lib/systemjack
+	mkdir -p $(DESTDIR)$(PREFIX)/lib/systemjack/extra.d
 	install -m755 scripts/lib/* $(DESTDIR)$(PREFIX)/lib/systemjack
 
 .PHONY: install_binscripts
@@ -22,7 +22,7 @@ install_binscripts:
 
 .PHONY: install_etc
 install_etc:
-	mkdir -p $(DESTDIR)$(ETC_PREFIX)/etc/systemjack/env.d
+	mkdir -p $(DESTDIR)$(ETC_PREFIX)/etc/systemjack
 	install -m644 etc/*.ini $(DESTDIR)$(ETC_PREFIX)/etc/systemjack
 
 .PHONY: install_share

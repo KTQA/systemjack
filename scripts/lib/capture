@@ -100,6 +100,29 @@ if [ ! -x $jack_capture ]; then
 	die "no jack_capture binary found or is not executable"
 fi
 
+case $ui in 
+	none)
+		ui=$(global_gui "urxvt" "none" "none")
+		;;
+	
+	screen)
+		ui=$(global_gui "urxvt" "screen" "screen")
+		;;
+
+	urxvt)
+		ui=$(global_gui "urxvt" "screen" "urxvt")
+		;;
+
+	hide)
+		ui=$(global_gui "hide" "screen" "hide")
+		;;
+
+	*)
+		die "capture '${name}' has nonsensical ui definition"
+		;;
+esac
+
+
 
 case $ui in
 	none)
@@ -130,7 +153,4 @@ case $ui in
 		do_in_urxvt "${cmd}" "${urxvt_name}" 1
 		;;
 
-	*)
-		die "capture '${name}' has nonsensical ui definition"
-		;;
 esac

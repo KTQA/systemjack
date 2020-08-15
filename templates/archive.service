@@ -1,0 +1,6 @@
+[Unit]
+Decription=Restart archive
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl try-restart sjcapture@archive.service

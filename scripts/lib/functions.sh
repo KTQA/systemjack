@@ -17,7 +17,7 @@ warn() {
 }
 
 say() {
-	echo -n "systemjack: "
+	echo -n "systemjack: " >&2
 	echo $1
 }
 
@@ -95,6 +95,34 @@ do_in_screen() {
 }
 
 
+global_gui() {
+
+	local global_gui
+
+	eval `$READINI -i ${INI_FILES}/main.ini setup:gui=global_gui`
+
+
+	case $global_gui in
+		true)
+			echo $1
+			
+			;;
+
+		false)
+			echo $2
+			;;
+
+		*)
+			echo $3
+			;;
+
+	esac
+
+}
+
+
+
+
 
 # startup sanity checks
 if [ ! -x $READINI ]; then
@@ -107,3 +135,24 @@ if [ "$(basename $0)" != "systemjack-setup" ]; then
 	fi
 fi
 
+
+## Services that systemjack has to manage.  If other packages have
+## service files that depend on systemjack, they need to be added to
+## this array.
+export SYSTEMJACK_SERVICES=(
+	"aj-snapshot.service"
+	"calf@.service"
+	"capture@.service"
+	"ffmpeg@.service"
+	"jackd.service"
+	"patch@.service"
+	"non-mixer.service"
+	"silentjack.service"
+	"mumble.service"
+)
+
+if [ -e ${SCRIPT_DIR}/extra.d/*.sh ]; then
+	for file in ${SCRIPT_DIR}/extra.d/*.sh; do
+		eval $file
+	done
+fi

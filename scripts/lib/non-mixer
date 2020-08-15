@@ -16,6 +16,7 @@ eval `$READINI -i ${INI_FILES}/main.ini \
 	nonmixer:gui=gui`;
 
 gui=${gui:-"true"}
+gui=$(global_gui "true" "false" "$gui")
 options=""
 
 if is_true $gui; then

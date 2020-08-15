@@ -13,7 +13,12 @@ echo "DISPLAY: ${DISPLAY}"
 # and, go!
 
 
-eval `$READINI -i "${INI_FILES}/main.ini" setup:pci=pci setup:rtc0=rtc setup:hpet=hpet setup:tmp=tmpdir`
+eval `$READINI -i "${INI_FILES}/main.ini" \
+	setup:pci=pci \
+	setup:rtc0=rtc \
+	setup:hpet=hpet \
+	setup:tmp=tmpdir \
+	setup:gui=global_gui`
 
 # Giving the sound card priority on the PCI bus
 if ! is_false $pci; then
@@ -44,7 +49,21 @@ fi
 
 # bit of a hack here, waiting to hear from the UI to start graphical apps
 # other apps (but not jack) depends on this script to complete before launching
-if [ ! -z ${DISPLAY+x} ]; then
+
+if [ $global_gui == "true" ]; then
+	say "global GUI enabled, waiting for GUI to start."
+	do_wait=1
+elif [ $global_gui == "false" ]; then
+	say "global GUI disabled"
+else
+	if [ ! -z ${DISPLAY+x} ]; then
+		say "waiting for GUI to start"
+		do_wait=1
+	fi
+fi
+
+
+if [ ! -z $do_wait ]; then
 	say "Waiting for GUI to start"
 	while [ ! -f "${tmpdir}/.systemjack_gui_started" ]; do sleep 1; done
 	say "GUI signaled start, completing."

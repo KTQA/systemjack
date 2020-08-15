@@ -14,7 +14,10 @@ eval `$READINI -i ${INI_FILES}/main.ini \
 	calf:config=config \
 	calf:gui=gui \
 	calf:name=name`;
+
 gui=${gui:-"true"}
+gui=$(global_gui "true" "false" "$gui")
+
 options=""
 calfjackhost=$(which calfjackhost)
 
