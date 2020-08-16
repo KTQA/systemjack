@@ -141,11 +141,11 @@ fi
 ## this array.
 export SYSTEMJACK_SERVICES=(
 	"aj-snapshot.service"
-	"calf@.service"
+	"calf.service"
 	"capture@.service"
 	"ffmpeg@.service"
 	"jackd.service"
-	"patch@.service"
+	"patchpanel@.service"
 	"non-mixer.service"
 	"silentjack.service"
 	"mumble.service"

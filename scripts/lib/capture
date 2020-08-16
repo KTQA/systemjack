@@ -141,7 +141,7 @@ case $ui in
 
 	urxvt)
 		cmd="${jack_capture} ${options} ${fullfile}"
-		say "capture in hidden urxvt '${name}' command: ${cmd}"
+		say "capture in urxvt '${name}' command: ${cmd}"
 		urxvt_name=$(printf "SystemJack Capture %s" $name)
 		do_in_urxvt "${cmd}" "${urxvt_name}" 0
 		;;
