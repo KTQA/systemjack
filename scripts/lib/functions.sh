@@ -153,6 +153,6 @@ export SYSTEMJACK_SERVICES=(
 
 if [ -e ${SCRIPT_DIR}/extra.d/*.sh ]; then
 	for file in ${SCRIPT_DIR}/extra.d/*.sh; do
-		eval $file
+		. $file
 	done
 fi
