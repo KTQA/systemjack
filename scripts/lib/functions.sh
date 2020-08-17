@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-
-#echo "functions.sh loaded"
+shopt -s nullglob
 
 READINI=${READINI:-$(which readini)}
 
@@ -139,7 +138,7 @@ fi
 ## Services that systemjack has to manage.  If other packages have
 ## service files that depend on systemjack, they need to be added to
 ## this array.
-export SYSTEMJACK_SERVICES=(
+SYSTEMJACK_SERVICES=(
 	"aj-snapshot.service"
 	"calf.service"
 	"capture@.service"
@@ -151,8 +150,10 @@ export SYSTEMJACK_SERVICES=(
 	"mumble.service"
 )
 
-if [ -e ${SCRIPT_DIR}/extra.d/*.sh ]; then
-	for file in ${SCRIPT_DIR}/extra.d/*.sh; do
+include_files=(${SCRIPT_DIR}/extra.d/*.sh)
+if [ ${#include_files[@]} -gt 0 ]; then
+	for file in "${include_files[@]}"; do
 		. $file
 	done
 fi
+
