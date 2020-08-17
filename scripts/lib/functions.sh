@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-shopt -s nullglob
-
 READINI=${READINI:-$(which readini)}
 
 die() {
@@ -150,7 +148,9 @@ SYSTEMJACK_SERVICES=(
 	"mumble.service"
 )
 
+shopt -s nullglob
 include_files=(${SCRIPT_DIR}/extra.d/*.sh)
+shopt -u nullglob
 if [ ${#include_files[@]} -gt 0 ]; then
 	for file in "${include_files[@]}"; do
 		. $file
