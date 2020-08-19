@@ -8,7 +8,6 @@ SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
 . "${SCRIPT_DIR}/functions.sh"
 . "${INI_FILES}/env.sh"
 
-echo "DISPLAY: ${DISPLAY}"
 
 # and, go!
 
@@ -17,6 +16,7 @@ eval `$READINI -i "${INI_FILES}/main.ini" \
 	setup:pci=pci \
 	setup:rtc0=rtc \
 	setup:hpet=hpet \
+	setup:user=user \
 	setup:tmp=tmpdir \
 	setup:gui=global_gui`
 
@@ -47,6 +47,21 @@ if ! is_false $hpet; then
 	fi
 fi
 
+# part 1 of Doing It Right: wait until we can actually connect to a jack
+# server as a user before we're done "initializing"
+say "waiting for jack to complete start"
+while : ; do
+	if su $user -c jack_test_connect ; then
+		break
+	else
+		say "waiting for jack..."
+		sleep 1
+	fi
+done
+say "jack online, continuing."
+
+
+
 # bit of a hack here, waiting to hear from the UI to start graphical apps
 # other apps (but not jack) depends on this script to complete before launching
 
@@ -57,14 +72,15 @@ elif [ $global_gui == "false" ]; then
 	say "global GUI disabled"
 else
 	if [ ! -z ${DISPLAY+x} ]; then
-		say "waiting for GUI to start"
+		say "DISPLAY set in env, waiting for GUI to start"
 		do_wait=1
 	fi
 fi
 
 
 if [ ! -z $do_wait ]; then
-	say "Waiting for GUI to start"
 	while [ ! -f "${tmpdir}/.systemjack_gui_started" ]; do sleep 1; done
 	say "GUI signaled start, completing."
+else
+	say "no GUI, completed."
 fi

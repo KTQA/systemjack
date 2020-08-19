@@ -94,12 +94,7 @@ do_in_screen() {
 
 global_gui() {
 
-	local global_gui
-
-	eval `$READINI -i ${INI_FILES}/main.ini setup:gui=global_gui`
-
-
-	case $global_gui in
+	case $SYSTEMJACK_GUI in
 		true)
 			echo $1
 			
@@ -127,11 +122,19 @@ if [ ! -x $READINI ]; then
 fi
 
 if [ "$(basename $0)" != "systemjack-setup" ]; then
+
+	# check if systemjack-setup has been completed
 	if [ ! -f /etc/systemd/system/jackd.service.d/override.conf ]; then
 		die "systemjack-setup not run, please run that first."
 	fi
-fi
 
+	# Get global GUI config, unset DISPLAY if false.
+	eval `$READINI -i ${INI_FILES}/main.ini setup:gui=SYSTEMJACK_GUI`
+	if [ "$SYSTEMJACK_GUI" == "false" ]; then
+		unset DISPLAY
+	fi
+
+fi
 
 ## Services that systemjack has to manage.  If other packages have
 ## service files that depend on systemjack, they need to be added to

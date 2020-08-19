@@ -22,6 +22,61 @@ if [ `whoami` != "root" ]; then
 	die "must be root to setup"
 fi
 
+uninstall() {
+
+	if [ "$force" == "0" ]; then
+		read -p "Remove all systemd and dbus configurations for systemjack? [y/N] " -n 1 -r
+		[[ ! $REPLY =~ [Yy] ]] && die "not continuing."
+	fi
+	echo
+
+	for service in ${SYSTEMJACK_SERVICES[@]}; do
+		systemctl revert $service || die "couldn't revert service '${service}'"
+	done
+	rm /etc/dbus-1/system.d/systemjack-dbus.conf || die "couldn't remove dbus file"
+
+	echo "systemjack local configuration purged."
+	exit 0
+
+}
+
+systemjack_help() {
+	cat <<EndHELP
+systemjack-setup: configure systemjack for use.
+
+	-u: do uninstall
+	-h: this help
+	-f: force, don't ask
+
+Without arguments, systemjack reads the main.ini file and sets
+up systemjack services to run as the specified user, and allows
+access to the sound card at the system level.
+EndHELP
+
+}
+
+force=0
+do_uninstall=0
+
+while getopts "uhf" option; do
+	case $option in
+		u)
+			do_uninstall=1
+			;;
+		h)
+			systemjack_help
+			exit 0
+			;;
+		f)
+			force=1
+			;;
+	esac
+done
+
+[[ "$do_uninstall" == "1" ]] && uninstall
+
+# doing setup start here.
+
 eval `$READINI -i "${INI_FILES}/main.ini" setup:user=user setup:group=group email:do=email_do`
 
 if is_false $user ; then
@@ -32,7 +87,8 @@ if is_false $group ; then
 	die "group is not set in main.ini"
 fi
 
-cat <<EndPreamble
+if [ "$force" == "0" ]; then
+	cat <<EndPreamble
 Configuring systemjack services for user '${user}' and group '${group}'.
 
 This setup script will make modifications to dbus and set overrides
@@ -42,15 +98,15 @@ before you continue.
 
 EndPreamble
 
-if is_true $email_do ; then
-	echo "Additionally, this script will configure emails on failure."
-	echo
-fi
+	if is_true $email_do ; then
+		echo "Additionally, this script will configure emails on failure."
+		echo
+	fi
 
-read -p "Does this sound good to you? [y/N] " -n 1 -r
-echo
-if [[ $REPLY =~ ^[^Yy]$ ]]; then
-	die "not continuing."
+	read -p "Does this sound good to you? [y/N] " -n 1 -r
+	echo
+	[[ ! $REPLY =~ [Yy] ]] && die "not continuing."
+
 fi
 
 echo "Step 1: Allow '${user}' to access sound hardware."

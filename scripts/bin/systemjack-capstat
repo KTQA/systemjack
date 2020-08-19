@@ -21,13 +21,17 @@ done
 shift $((OPTIND - 1))
 name=$@ # this probably needs to be cleaner when I'm thinking better
 
+if [ -z $name ]; then
+	die "must specify capture definition"
+fi
+
 eval `$READINI -i "${INI_FILES}/capture.ini" "${name}:dir=dir" "${name}:ui=ui"`
 
 prefix=${prefix:-"$name"}
 
 # Verify directory, which also verifies existence
-if [ ! -w "$dir" ]; then
-	die "$dir is not a valid capture definition"
+if [ ! -d "$dir" ]; then
+	die "$name is not a valid capture definition"
 fi
 
 
