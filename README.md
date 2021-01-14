@@ -25,6 +25,7 @@ Supported Apps
 - [non-mixer](http://non.tuxfamily.org/wiki/Non%20Mixer), a software mixer
 - [meterbridge](http://plugin.org.uk/meterbridge/), a method for displaying a meter
 - [silentjack](https://www.aelius.com/njh/silentjack/), a silence (or dead air) detector
+- [calf](http://calf-studio-gear.org/), a collection of live effects
 
 There is also a method to add more applications to systemjack.  Documentation is (unsurprisingly) forthcoming.
 
