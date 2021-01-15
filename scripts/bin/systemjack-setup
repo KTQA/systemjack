@@ -172,10 +172,6 @@ You'll also want to make sure DISPLAY is properly set in the ENV file
 at '/etc/systemjack/env.sh'.  This is true if you're using X11 or
 Wayland.  Sorry.
 
-We don't have a good VNC setup yet, but we're working on that.  For auto-
-matic GUI launch, see your distribution's documentation.  VNC launch
-is forthcoming.
-
 You'll now want to enable at least systemjack-init and jackd, and then
 reboot to make sure your changes are good.
 
