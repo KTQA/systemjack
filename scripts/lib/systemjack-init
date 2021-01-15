@@ -51,7 +51,7 @@ fi
 # server as a user before we're done "initializing"
 say "waiting for jack to complete start"
 while : ; do
-	if su $user -c jack_test_connect ; then
+	if su $user -c "jack_wait -w" ; then
 		break
 	else
 		say "waiting for jack..."

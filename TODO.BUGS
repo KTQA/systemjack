@@ -1,12 +1,9 @@
 ===== PRIORITY =====
 
-  - use jack_wait instead of our own solution
   - figure out how to restart capture in screen more without causing a failure mode
-  - add VNC configuration back
 
 ===== TODO =====
 
-  - Insure that SIGTERM sent to jack_capture saves the buffer.
   - figure out how to do opus with jack_capture
   - maybe use PHP's ini array method for cross-compatibility?
 

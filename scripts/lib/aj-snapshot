@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-die "this is a failure"
 
 # set directories for scripts.
 INI_FILES=${INI:-"/etc/systemjack"}
