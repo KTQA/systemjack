@@ -1,6 +1,8 @@
 [Unit]
 Description=jackd via systemjack
-After=sound.target
+After=sound.target network-online.target
+Wants=network-online.target             
+
 
 [Service]
 ExecStart=/usr/lib/systemjack/jackd
