@@ -42,10 +42,10 @@ fi
 arg=""
 
 if is_false $gui; then
-	arg+=" --headless "
+	arg+="--headless "
 fi
 
-if [ -v $password ]; then
+if [ -v password ]; then
 	arg+="-p ${password}"
 fi
 
