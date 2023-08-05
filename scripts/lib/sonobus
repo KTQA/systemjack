@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+# set directories for scripts.
+INI_FILES=${INI:-"/etc/systemjack"}
+SCRIPT_DIR=${SCRIPTS:-"/usr/lib/systemjack"}
+
+# load functions and environment
+. "${SCRIPT_DIR}/functions.sh"
+. "${INI_FILES}/env.sh"
+
+# and, go!
+
+eval $($READINI -i "${INI_FILES}/main.ini" \
+	sonobus:gui=gui \
+	sonobus:config=config \
+	sonobus:server=server \
+	sonobus:name=name \
+	sonobus:group=group \
+	sonobus:password=password
+)
+
+sonobus=$(which sonobus)
+gui=${gui:-"true"}
+gui=$(global_gui "true" "false" "$gui")
+
+if [ -z $config ]; then
+	die "no config file for sonobus"
+fi
+
+if [ -z $server ]; then
+	die "no connection server for sonobus"
+fi
+
+if [ -z $name ]; then
+	die "no name for sonobus client"
+fi
+
+if [ -z $group ]; then
+	die "no group name for sonobus client"
+fi
+
+arg=""
+
+if is_false $gui; then
+	arg+=" --headless "
+fi
+
+if [ -v $password ]; then
+	arg+="-p ${password}"
+fi
+
+if [ ! -x $sonobus ]; then
+	die "sonobus is not executable"
+else
+	exec $sonobus $arg -g $group -n $name -c $server -l $config
+fi
