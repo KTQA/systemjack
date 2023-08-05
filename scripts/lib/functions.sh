@@ -149,6 +149,7 @@ SYSTEMJACK_SERVICES=(
 	"non-mixer.service"
 	"silentjack.service"
 	"mumble.service"
+	"sonobus.service"
 )
 
 shopt -s nullglob
