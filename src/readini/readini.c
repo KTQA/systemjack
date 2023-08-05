@@ -123,6 +123,7 @@ int main(int argc, char **argv) {
 	int o, error;
 	char *ini_file = NULL, *section = NULL, *field = NULL,
 		 *env = NULL, *tmp = NULL;
+	char* tokstate;
 
 	while ( (o = getopt(argc, argv, "tdahvi:")) != -1 ) {
 
@@ -204,10 +205,10 @@ int main(int argc, char **argv) {
 
 		for (int i = optind ; i < argc ; i++) {
 
-			tmp = strtok(argv[i], "=");
-			env = strtok(NULL,    "=");
-			section = strtok(tmp, ":");
-			field   = strtok(NULL, ":");
+			tmp = strtok_r(argv[i], "=", &tokstate);
+			env = strtok_r(NULL,    "=", &tokstate);
+			section = strtok_r(tmp, ":", &tokstate);
+			field   = strtok_r(NULL, ":", &tokstate);
 
 			if (field == NULL) {
 				iniparts[ iniparts_idx ].section = "";
@@ -217,10 +218,13 @@ int main(int argc, char **argv) {
 				iniparts[ iniparts_idx ].field   = field;
 			}
 
-			
-			if (env[ strlen(env) - 1 ] == '@') {
-				iniparts[ iniparts_idx ].array = 1;
-				env[ strlen(env) - 1 ] = '\0';
+			if (env == NULL) {
+				iniparts[ iniparts_idx ].env = "";
+			} else {
+				if (env != NULL && env[ strlen(env) - 1 ] == '@') {
+					iniparts[ iniparts_idx ].array = 1;
+					env[ strlen(env) - 1 ] = '\0';
+				}
 			}
 
 			iniparts[ iniparts_idx ].env     = env;
