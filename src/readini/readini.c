@@ -119,7 +119,7 @@ static void version(char *name) {
 
 
 int main(int argc, char **argv) {
-	bool do_time;
+	bool do_time = false;
 	int o, error;
 	char *ini_file = NULL, *section = NULL, *field = NULL,
 		 *env = NULL, *tmp = NULL;
